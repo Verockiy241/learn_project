@@ -13,8 +13,10 @@ __pycache__/
 venv/
 env/
 .env
-.venv/
+backend/.venv/
 
 # Системные файлы
 
 Thumbs.db # Только для Windows
+
+.idea
