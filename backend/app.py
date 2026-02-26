@@ -35,10 +35,10 @@ if __name__ == '__main__':
         os.makedirs('data')
         print("Создана папка 'data' ")
 
-        print('=' * 40)
-        print("Сервер запущен")
-        print("Фронтенд: frontend/index.html")
-        print('=' * 40)
+    print('=' * 40)
+    print("Сервер запущен")
+    print("Фронтенд: frontend/index.html")
+    print('=' * 40)
 
         #Запускаем сервер
     app.run(debug=True, host='0.0.0.0', port=5000)
