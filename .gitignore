@@ -17,6 +17,8 @@ backend/.venv/
 
 # Системные файлы
 
-Thumbs.db # Только для Windows
+# Только для Windows
+Thumbs.db
+
 
 .idea
