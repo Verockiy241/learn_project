@@ -86,3 +86,10 @@ def delete_track(track_id: int):
     deleted_rows = cursor.rowcount
     conn.close()
     return deleted_rows > 0
+
+#Получение уникальных жанров
+def get_all_genres():
+    conn = get_connection()
+    rows = conn.execute("SELECT DISTINCT genre FROM tracks WHERE genre IS NOT NULL AND genre != '' ORDER BY genre").fetchall()
+    conn.close()
+    return [row["genre"] for row in rows]
