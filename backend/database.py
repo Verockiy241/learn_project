@@ -29,10 +29,12 @@ def init_db():
 
     total = cursor.execute("SELECT COUNT(*) AS total FROM tracks").fetchone()["total"]
     if total == 0:
+        # Добавляем разнообразные демо-треки, чтобы "обучить" список жанров
         demo_tracks = [
-            ("Nightfall", "Unirazze", "pluggnb", 140, 185, "FL Studio", "C# minor"),
+            ("Nightfall", "Unirazze", "Pluggnb", 140, 185, "FL Studio", "C# minor"),
             ("Digital Tears", "Unirazze", "Archivecore", 165, 142, "FL Studio", "F minor"),
-            ("Sunset Bounce", "Max", "ambient", 120, 210, "Ableton", "A major")
+            ("Sunset Bounce", "Max", "Ambient", 120, 210, "Ableton", "A major"),
+            ("Glitch Life", "Denis", "Glitch Hop", 110, 190, "FL Studio", "G major")
         ]
         cursor.executemany(
             '''

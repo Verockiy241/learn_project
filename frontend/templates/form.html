@@ -24,10 +24,32 @@
                                 <label class="form-label">Исполнитель *</label>
                                 <input type="text" name="artist" class="form-control" required value="{{ track.artist if track else '' }}">
                             </div>
+
                             <div class="col-md-6">
                                 <label class="form-label">Жанр</label>
-                                <input type="text" name="genre" class="form-control" value="{{ track.genre if track and track.genre else '' }}">
+                                <div class="input-group">
+                                    <input type="text" id="genreInput" name="genre" class="form-control"
+                                           value="{{ track.genre if track and track.genre else '' }}"
+                                           autocomplete="off" placeholder="Выберите или введите...">
+
+                                    <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                            data-bs-toggle="dropdown" aria-expanded="false" title="Показать список">
+                                    </button>
+
+                                    <ul class="dropdown-menu dropdown-menu-end w-100">
+                                        {% if genres %}
+                                            {% for g in genres %}
+                                            <li>
+                                                <a class="dropdown-item" href="#" onclick="selectGenre('{{ g }}'); return false;">{{ g }}</a>
+                                            </li>
+                                            {% endfor %}
+                                        {% else %}
+                                            <li><span class="dropdown-item-text text-muted">Нет сохраненных жанров</span></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
                             </div>
+
                             <div class="col-md-6">
                                 <label class="form-label">Тональность</label>
                                 <input type="text" name="track_key" class="form-control" value="{{ track.track_key if track and track.track_key else '' }}">
@@ -55,5 +77,13 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function selectGenre(genre) {
+            document.getElementById('genreInput').value = genre;
+        }
+    </script>
 </body>
 </html>

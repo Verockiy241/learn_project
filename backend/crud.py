@@ -12,6 +12,16 @@ def get_track_by_id(track_id: int):
     conn.close()
     return dict(row) if row else None
 
+# НОВОЕ: Получение списка всех уникальных жанров для выпадающего списка
+def get_all_genres():
+    conn = get_connection()
+    # Выбираем только уникальные и не пустые значения жанров
+    rows = conn.execute(
+        "SELECT DISTINCT genre FROM tracks WHERE genre IS NOT NULL AND genre != '' ORDER BY genre"
+    ).fetchall()
+    conn.close()
+    return [row["genre"] for row in rows]
+
 def create_track(track_data: dict):
     conn = get_connection()
     cursor = conn.cursor()
@@ -87,9 +97,15 @@ def delete_track(track_id: int):
     conn.close()
     return deleted_rows > 0
 
-#Получение уникальных жанров
-def get_all_genres():
+# НОВОЕ: Массовое удаление
+def delete_multiple_tracks(track_ids: list[int]):
+    if not track_ids:
+        return 0
     conn = get_connection()
-    rows = conn.execute("SELECT DISTINCT genre FROM tracks WHERE genre IS NOT NULL AND genre != '' ORDER BY genre").fetchall()
+    cursor = conn.cursor()
+    placeholders = ','.join('?' for _ in track_ids)
+    cursor.execute(f"DELETE FROM tracks WHERE id IN ({placeholders})", track_ids)
+    conn.commit()
+    deleted_rows = cursor.rowcount
     conn.close()
-    return [row["genre"] for row in rows]
+    return deleted_rows

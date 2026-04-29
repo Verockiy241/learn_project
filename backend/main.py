@@ -52,3 +52,8 @@ def delete_track(track_id: int):
     if not deleted:
         raise HTTPException(status_code=404, detail="Трек не найден")
     return {"message": "Трек успешно удалён"}
+
+#эндпоинт для жанров
+@app.get("/genres", response_model=list[str], tags=["Genres"])
+def read_genres():
+    return crud.get_all_genres()
