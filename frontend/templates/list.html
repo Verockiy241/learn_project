@@ -43,8 +43,8 @@
                                 <td>{{ track.bpm or '-' }}</td>
                                 <td>{{ track.daw or '-' }}</td>
                                 <td class="text-end pe-3">
-                                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('edit_track', track_id=track.id) }}">Ред.</a>
-                                    <form method="post" action="{{ url_for('delete_track', track_id=track.id) }}" class="d-inline">
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('edit_track', track_id=track.id) }}" >Ред.</a>
+                                    <form method="post" action="{{ url_for('delete_track', track_id=track.id) }}" class="d-inline" onsubmit="return confirm('Вы уверены, что хотите удалить этот трек?');">
                                         <button type="submit" class="btn btn-sm btn-outline-danger">Удал.</button>
                                     </form>
                                 </td>
