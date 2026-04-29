@@ -1,4 +1,6 @@
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import List
 from . import crud
 from .database import init_db
 from .schemas import TrackCreate, TrackUpdate, TrackPatch, TrackResponse
@@ -6,8 +8,12 @@ from .schemas import TrackCreate, TrackUpdate, TrackPatch, TrackResponse
 app = FastAPI(
     title="Music Service API",
     description="REST API для управления музыкальными треками.",
-    version="1.0.0"
+    version="1.1.0"
 )
+
+# Модель для принятия списка ID при массовом удалении
+class BulkDeleteRequest(BaseModel):
+    track_ids: List[int]
 
 @app.on_event("startup")
 def startup():
@@ -21,6 +27,11 @@ def root():
 def read_tracks():
     return crud.get_all_tracks()
 
+# Эндпоинт для получения списка всех уникальных жанров из БД (для выпадающего списка в формах)
+@app.get("/genres", response_model=list[str], tags=["Genres"])
+def read_genres():
+    return crud.get_all_genres()
+
 @app.get("/tracks/{track_id}", response_model=TrackResponse, tags=["Tracks"])
 def read_track(track_id: int):
     track = crud.get_track_by_id(track_id)
@@ -31,6 +42,13 @@ def read_track(track_id: int):
 @app.post("/tracks", response_model=TrackResponse, status_code=201, tags=["Tracks"])
 def create_track(track: TrackCreate):
     return crud.create_track(track.model_dump())
+
+# ИСПРАВЛЕНО: Обязательно используем метод POST для массового удаления,
+# чтобы передать список ID в формате JSON (тело запроса)
+@app.post("/tracks/bulk-delete", tags=["Tracks"])
+def bulk_delete_tracks(request: BulkDeleteRequest):
+    deleted_count = crud.delete_multiple_tracks(request.track_ids)
+    return {"message": f"Удалено треков: {deleted_count}"}
 
 @app.put("/tracks/{track_id}", response_model=TrackResponse, tags=["Tracks"])
 def update_track(track_id: int, track: TrackUpdate):
@@ -52,8 +70,3 @@ def delete_track(track_id: int):
     if not deleted:
         raise HTTPException(status_code=404, detail="Трек не найден")
     return {"message": "Трек успешно удалён"}
-
-#эндпоинт для жанров
-@app.get("/genres", response_model=list[str], tags=["Genres"])
-def read_genres():
-    return crud.get_all_genres()

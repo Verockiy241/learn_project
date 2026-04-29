@@ -79,12 +79,17 @@ def delete_track(track_id: int):
 
 @app.route("/tracks/bulk_delete", methods=["POST"])
 def bulk_delete_tracks():
-    """Маршрут для массового удаления выбранных треков"""
     track_ids = request.form.getlist("track_ids")
+
+    # 1. Проверяем, долетают ли галочки от HTML-формы до Flask
+    print(f"\n[DEBUG Flask] Получены ID с фронта: {track_ids}")
     if track_ids:
-        # Превращаем строковые ID в числа для API
         ids_to_delete = [int(tid) for tid in track_ids]
-        requests.post(f"{API_URL}/tracks/bulk-delete", json={"track_ids": ids_to_delete}, timeout=5)
+        response = requests.post(f"{API_URL}/tracks/bulk-delete", json={"track_ids": ids_to_delete}, timeout=5)
+        # 2. Проверяем, что ответил FastAPI
+        print(f"[DEBUG Flask] Ответ от FastAPI: {response.status_code} - {response.text}\n")
+    else:
+        print("[DEBUG Flask] Список пуст! Галочки не дошли.\n")
     return redirect(url_for("track_list"))
 
 # Вариант в app.py для добавления "заготовленных" жанров
@@ -97,6 +102,8 @@ def fetch_genres():
         return sorted(list(set(default_genres + db_genres)))
     except Exception:
         return default_genres
+
+
 
 
 if __name__ == "__main__":
