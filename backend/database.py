@@ -27,9 +27,9 @@ def init_db():
     )
     conn.commit()
 
+    # Проверяем, пуста ли база. Если да — закидываем заготовки
     total = cursor.execute("SELECT COUNT(*) AS total FROM tracks").fetchone()["total"]
     if total == 0:
-        # Добавляем разнообразные демо-треки, чтобы "обучить" список жанров
         demo_tracks = [
             ("Nightfall", "Unirazze", "Pluggnb", 140, 185, "FL Studio", "C# minor"),
             ("Digital Tears", "Unirazze", "Archivecore", 165, 142, "FL Studio", "F minor"),

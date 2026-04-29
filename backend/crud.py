@@ -12,10 +12,10 @@ def get_track_by_id(track_id: int):
     conn.close()
     return dict(row) if row else None
 
-# НОВОЕ: Получение списка всех уникальных жанров для выпадающего списка
+# Функция для получения списка уникальных жанров из базы
 def get_all_genres():
     conn = get_connection()
-    # Выбираем только уникальные и не пустые значения жанров
+    # Берем только уникальные названия, чтобы в списке не было повторов
     rows = conn.execute(
         "SELECT DISTINCT genre FROM tracks WHERE genre IS NOT NULL AND genre != '' ORDER BY genre"
     ).fetchall()
@@ -68,25 +68,7 @@ def update_track(track_id: int, track_data: dict):
     conn.commit()
     updated_rows = cursor.rowcount
     conn.close()
-    if updated_rows == 0:
-        return None
-    return get_track_by_id(track_id)
-
-def patch_track(track_id: int, track_data: dict):
-    existing = get_track_by_id(track_id)
-    if not existing:
-        return None
-
-    updated = {
-        "title": track_data.get("title", existing["title"]),
-        "artist": track_data.get("artist", existing["artist"]),
-        "genre": track_data.get("genre", existing["genre"]),
-        "bpm": track_data.get("bpm", existing["bpm"]),
-        "duration_sec": track_data.get("duration_sec", existing["duration_sec"]),
-        "daw": track_data.get("daw", existing["daw"]),
-        "track_key": track_data.get("track_key", existing["track_key"]),
-    }
-    return update_track(track_id, updated)
+    return get_track_by_id(track_id) if updated_rows > 0 else None
 
 def delete_track(track_id: int):
     conn = get_connection()
@@ -97,7 +79,6 @@ def delete_track(track_id: int):
     conn.close()
     return deleted_rows > 0
 
-# НОВОЕ: Массовое удаление
 def delete_multiple_tracks(track_ids: list[int]):
     if not track_ids:
         return 0

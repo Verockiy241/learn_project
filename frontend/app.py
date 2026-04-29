@@ -1,7 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 import requests
 
 app = Flask(__name__)
+
+# Секретный ключ нужен для шифрования сессии, где хранятся flash-сообщения
+app.secret_key = "super_secret_music_key_ISP239"
 API_URL = "http://127.0.0.1:8000"
 
 
@@ -10,12 +13,22 @@ def get_int_or_none(val):
 
 
 def fetch_genres():
-    """Вспомогательная функция для получения списка жанров из API"""
+    """Получение списка жанров из API + жестко заданные шаблоны"""
+    # Твои заготовленные шаблоны, которые будут в списке ВСЕГДА
+    default_genres = ["Pluggnb", "Archivecore", "Ambient", "Glitch Hop", "Phonk", "Lo-Fi"]
+
     try:
         response = requests.get(f"{API_URL}/genres", timeout=5)
-        return response.json() if response.ok else []
+        db_genres = response.json() if response.ok else []
+
+        # Складываем шаблоны и жанры из БД в один список
+        # Используем set() чтобы убрать дубликаты (если шаблон уже есть в БД)
+        all_genres = list(set(default_genres + db_genres))
+
+        # Возвращаем отсортированный по алфавиту список
+        return sorted(all_genres)
     except Exception:
-        return []
+        return sorted(default_genres)
 
 
 @app.route("/")
@@ -46,6 +59,7 @@ def create_track():
             "track_key": request.form.get("track_key", "")
         }
         requests.post(f"{API_URL}/tracks", json=data, timeout=5)
+        flash("Новый трек успешно добавлен!", "success")
         return redirect(url_for("track_list"))
 
     return render_template("form.html", track=None, genres=fetch_genres())
@@ -64,45 +78,30 @@ def edit_track(track_id: int):
             "track_key": request.form.get("track_key", "")
         }
         requests.put(f"{API_URL}/tracks/{track_id}", json=data, timeout=5)
+        flash("Изменения сохранены!", "success")
         return redirect(url_for("track_list"))
 
     response = requests.get(f"{API_URL}/tracks/{track_id}", timeout=5)
-    track_data = response.json() if response.ok else None
-    return render_template("form.html", track=track_data, genres=fetch_genres())
+    return render_template("form.html", track=response.json() if response.ok else None, genres=fetch_genres())
 
 
 @app.route("/tracks/<int:track_id>/delete", methods=["POST"])
 def delete_track(track_id: int):
     requests.delete(f"{API_URL}/tracks/{track_id}", timeout=5)
+    flash("Трек удален!", "success")
     return redirect(url_for("track_list"))
 
 
 @app.route("/tracks/bulk_delete", methods=["POST"])
 def bulk_delete_tracks():
     track_ids = request.form.getlist("track_ids")
-
-    # 1. Проверяем, долетают ли галочки от HTML-формы до Flask
-    print(f"\n[DEBUG Flask] Получены ID с фронта: {track_ids}")
     if track_ids:
         ids_to_delete = [int(tid) for tid in track_ids]
-        response = requests.post(f"{API_URL}/tracks/bulk-delete", json={"track_ids": ids_to_delete}, timeout=5)
-        # 2. Проверяем, что ответил FastAPI
-        print(f"[DEBUG Flask] Ответ от FastAPI: {response.status_code} - {response.text}\n")
+        requests.post(f"{API_URL}/tracks/bulk-delete", json={"track_ids": ids_to_delete}, timeout=5)
+        flash(f"Удалено треков: {len(ids_to_delete)}", "success")
     else:
-        print("[DEBUG Flask] Список пуст! Галочки не дошли.\n")
+        flash("Ничего не выбрано для удаления.", "warning")
     return redirect(url_for("track_list"))
-
-# Вариант в app.py для добавления "заготовленных" жанров
-def fetch_genres():
-    default_genres = ["Phonk", "Hyperpop", "Lo-Fi", "Techno"] # Ваши заготовки
-    try:
-        response = requests.get(f"{API_URL}/genres", timeout=5)
-        db_genres = response.json() if response.ok else []
-        # Объединяем ваши заготовки и жанры из базы, убирая дубликаты
-        return sorted(list(set(default_genres + db_genres)))
-    except Exception:
-        return default_genres
-
 
 
 
